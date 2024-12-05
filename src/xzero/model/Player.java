@@ -24,7 +24,7 @@ public class Player {
     }
 
  // ----------------------- Устанавливаем связь с полем -----------------------   
-    GameField _field;
+    private GameField _field;
     
     public Player (GameField field, String name) {
         _field = field;
@@ -32,7 +32,7 @@ public class Player {
     }
     
 // ---------------------- Метка, которую нужно установить -----------------------    
-    Label _label;
+    private Label _label;
     
     public void setActiveLabel(Label l) {
         _label = l;
@@ -47,7 +47,9 @@ public class Player {
     }
     
     public void setLabelTo(Point pos){
-        
+        if (_label == null) {
+            throw new IllegalStateException("Активная метка не задана.");
+        }
         // TODO породить исключение, если не задана активная метка 
         
         _field.setLabel(pos, _label);
