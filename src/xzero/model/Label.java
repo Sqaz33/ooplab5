@@ -15,6 +15,15 @@ public class Label {
         _cell = cell;
         cell.setLabel(this);
     }
+
+    public void unsetCell() {
+        if (_cell == null) {
+            return;
+        }
+        Cell buf = _cell;
+        _cell = null;
+        buf.unsetLabel();
+    }
     
     public Cell cell(){
         return _cell;

@@ -35,6 +35,15 @@ public class Cell {
         _label = label;
         _label.setCell(this);
     }
+
+    public void unsetLabel() {
+        if (_label == null) {
+            return;
+        }
+        Label buf = _label;
+        _label = null;
+        buf.unsetCell();
+    }
     
     public Label label() {
         return _label;
