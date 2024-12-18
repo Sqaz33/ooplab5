@@ -13,9 +13,7 @@ public class ExchangePlayerNSwapLabel extends ChainedExchangePlayerStrategy {
         super(next);
     }
 
-    @Override
-    public void exchangePlayer(GameModel model) {
-        //------------------------------------
+    private void randomlySwapLabelOwner(GameModel model) {
         Random random = new Random();
         int val = random.nextInt(2);
         if (val == 1) {
@@ -39,6 +37,12 @@ public class ExchangePlayerNSwapLabel extends ChainedExchangePlayerStrategy {
                 randomPlayer.setLabelTo(randomLabel.cell().position());
             }
         }
+    }
+
+    @Override
+    public void exchangePlayer(GameModel model) {
+        randomlySwapLabelOwner(model);
+        //------------------------------------
         next().exchangePlayer(model);
     }
 }
