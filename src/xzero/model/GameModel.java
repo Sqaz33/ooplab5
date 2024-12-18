@@ -1,7 +1,6 @@
 package xzero.model;
 
 import java.awt.Point;
-import java.lang.foreign.PaddingLayout;
 import java.util.ArrayList;
 import java.util.List;
 import xzero.model.events.GameEvent;
@@ -10,6 +9,7 @@ import xzero.model.events.PlayerActionEvent;
 import xzero.model.events.PlayerActionListener;
 import xzero.model.factory.CellFactory;
 import xzero.model.factory.LabelFactory;
+import xzero.model.gameModelStrategy.ExchangePlayerStrategy;
 import xzero.model.navigation.Direction;
 
 /**
@@ -31,13 +31,24 @@ public class GameModel {
 // -------------------------------- Игроки -----------------------------------
     
     private ArrayList<Player> _playerList = new ArrayList<>();
-    private int _activePlayer;
+    private int _activePlayer = 0;
+
+    public ArrayList<Player> playerList() {
+        return _playerList;
+    }
+
+    public void moveActivePlayer() {
+        _activePlayer++;
+        if(_activePlayer >= _playerList.size())     _activePlayer = 0;
+    }
 
     public Player activePlayer(){
         return _playerList.get(_activePlayer);
     }
+
     
-    public GameModel(){
+    public GameModel(ExchangePlayerStrategy exchangePlayerStrategy) {
+        _exchangePlayerStrategy = exchangePlayerStrategy;
         // 1)
         field_ = new GameField();
 
@@ -89,21 +100,16 @@ public class GameModel {
 
     private LabelFactory _labelFactory = new LabelFactory();
 
+    ExchangePlayerStrategy _exchangePlayerStrategy;
     private void exchangePlayer(){
-
-        // Сменить игрока
-        _activePlayer++;
-        if(_activePlayer >= _playerList.size())     _activePlayer = 0;
-        
-        // Выбрать для него метку
-        Label newLabel = _labelFactory.createLabel();
-        activePlayer().setActiveLabel(newLabel);
-        
-        // Генерируем событие
+        _exchangePlayerStrategy.exchangePlayer(this);
         firePlayerExchanged(activePlayer());
     }
-    
-    
+
+    public LabelFactory labelFactory() {
+        return _labelFactory;
+    }
+
     private static int WINNER_LINE_LENGTH = 5;
     
     private Player determineWinner(){
@@ -136,18 +142,18 @@ public class GameModel {
     private class PlayerObserver implements PlayerActionListener{
 
         @Override
-        public void labelisPlaced(PlayerActionEvent e) {
+        public void labelIsPlaced(PlayerActionEvent e) {
             
             //  Транслируем событие дальше для активного игрока
-            if(e.player() == activePlayer()){
+//            if(e.player() == activePlayer()){
                 fireLabelIsPlaced(e);
-            }
+//            }
             
             // Определяем победителя
             Player winner = determineWinner();
             
             // Меняем игрока, если игра продолжается
-            if(winner == null)
+            if(winner == null && e.player() == activePlayer())
             {
                 exchangePlayer();
             }
@@ -223,7 +229,7 @@ public class GameModel {
         
         for (Object listner : _playerListenerList)
         {
-            ((PlayerActionListener)listner).labelisPlaced(e);
+            ((PlayerActionListener)listner).labelIsPlaced(e);
         }
     }     
     
@@ -233,5 +239,6 @@ public class GameModel {
         {
             ((PlayerActionListener)listner).labelIsReceived(e);
         }
-    }         
+    }
+
 }

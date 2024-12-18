@@ -24,7 +24,7 @@ public class Label {
     
     private Player _player = null;
     
-    void setPlayer(Player p){
+    public void setPlayer(Player p){
         _player = p;
     }
 

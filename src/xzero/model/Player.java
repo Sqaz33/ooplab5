@@ -93,7 +93,7 @@ public class Player {
         pae.setLabel(l);
         pae.setPlayer(this);
         for (PlayerActionListener listener : _playerListenerList) {
-            listener.labelisPlaced(pae);
+            listener.labelIsPlaced(pae);
         }
     }     
 

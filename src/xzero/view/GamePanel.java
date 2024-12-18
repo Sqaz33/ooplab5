@@ -17,6 +17,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import xzero.model.gameModelStrategy.ConcreteExchangePlayer;
 import xzero.model.GameModel;
 import xzero.model.Label;
 import xzero.model.Player;
@@ -24,32 +25,35 @@ import xzero.model.events.GameEvent;
 import xzero.model.events.GameListener;
 import xzero.model.events.PlayerActionEvent;
 import xzero.model.events.PlayerActionListener;
+import xzero.model.gameModelStrategy.ExchangePlayerNSwapLabel;
 
 public class GamePanel extends JFrame {
-    
+
     private JPanel fieldPanel = new JPanel();
-    
+
     private JPanel infoPanel = new JPanel();
     private JButton labelInfo = new JButton();
     private JLabel playerInfo = new JLabel();
 
     private JMenuBar menu = null;
     private final String fileItems[] = new String []{"New", "Exit"};
-    
+
     private final int CELL_SIZE = 50;
     private final int TITLE_HEIGHT = 40;
-    
-    private GameModel _model = new GameModel();
+
+    private GameModel _model = new GameModel(
+            new ExchangePlayerNSwapLabel(new ConcreteExchangePlayer())
+    );
 
     public GamePanel() {
         super();
 
         this.setTitle("Крестики-нолики NEXT");
-        
+
         // Представление должно реагировать на изменение состояния модели
         _model.addGameListener(new GameObserver());
         _model.addPlayerActionListener(new PlayerObserver());
-        
+
         // Меню
         createMenu();
         setJMenuBar(menu);
@@ -68,30 +72,30 @@ public class GamePanel extends JFrame {
         createField();
         setEnabledField(false);
         mainBox.add(fieldPanel);
-        
+
         setContentPane(mainBox);
         pack();
         setResizable(false);
     }
-    
+
 // ---------------------- Создаем информационную панель -----------------------
-    
+
     private Box createInfoPanel() {
-        
+
         Box box = Box.createHorizontalBox();
-        
+
         box.add(Box.createHorizontalStrut(10));
-        
+
         box.add(new JLabel("Игрок :"));
         playerInfo.setText("?");
         box.add(Box.createHorizontalStrut(10));
         box.add(playerInfo);
-        
+
         box.add(Box.createHorizontalStrut(20));
 
         box.add(new JLabel("Метка :"));
         box.add(Box.createHorizontalStrut(10));
-        
+
         labelInfo.setEnabled(false);
         labelInfo.setPreferredSize(new Dimension(CELL_SIZE, CELL_SIZE));
         labelInfo.setMinimumSize(new Dimension(CELL_SIZE, CELL_SIZE));
@@ -99,33 +103,33 @@ public class GamePanel extends JFrame {
         box.add(labelInfo);
 
         box.add(Box.createHorizontalStrut(10));
-        
+
         return box;
     }
-        
-// --------------------------- Отрисовываем поле ------------------------------    
-    
+
+// --------------------------- Отрисовываем поле ------------------------------
+
     private void createField(){
-        
+
         fieldPanel.setDoubleBuffered(true);
         fieldPanel.setLayout(new GridLayout(_model.field().height(), _model.field().width()));
-        
+
         Dimension fieldDimension = new Dimension(CELL_SIZE*_model.field().height(), CELL_SIZE*_model.field().width());
-        
+
         fieldPanel.setPreferredSize(fieldDimension);
         fieldPanel.setMinimumSize(fieldDimension);
         fieldPanel.setMaximumSize(fieldDimension);
-        
+
         repaintField();
     }
-    
+
     public void repaintField() {
-        
+
         fieldPanel.removeAll();
 
-        for (int row = 1; row <= _model.field().height(); row++) 
+        for (int row = 1; row <= _model.field().height(); row++)
         {
-            for (int col = 1; col <= _model.field().width(); col++) 
+            for (int col = 1; col <= _model.field().width(); col++)
             {
                 JButton button = new JButton("");
                 button.setFocusable(false);
@@ -136,9 +140,9 @@ public class GamePanel extends JFrame {
 
         fieldPanel.validate();
     }
-    
+
     private Point buttonPosition(JButton btn){
-        
+
         int index = 0;
         for(Component widget: fieldPanel.getComponents())
         {
@@ -148,19 +152,19 @@ public class GamePanel extends JFrame {
                 {
                     break;
                 }
-                
+
                 index++;
             }
          }
-        
+
         int fieldWidth = _model.field().width();
         return new Point(index%fieldWidth + 1, index/fieldWidth + 1);
     }
-        
+
    private JButton getButton(Point pos) {
 
        int index = _model.field().width()*(pos.y-1) + (pos.x-1);
-       
+
         for(Component widget: fieldPanel.getComponents())
         {
             if(widget instanceof JButton)
@@ -172,42 +176,42 @@ public class GamePanel extends JFrame {
                 index--;
             }
          }
-        
+
         return null;
     }
 
-    private void drawLabelOnField(Label l){ 
-        
+    private void drawLabelOnField(Label l){
+
         JButton btn = getButton(l.cell().position());
         btn.setText(l.player().name());
     }
-    
-    private void drawLabelOnInfoPanel(Label l){ 
-        
-        labelInfo.setText(l.player().name());
-    }   
 
-    private void drawPlayerOnInfoPanel(Player p){ 
-        
+    private void drawLabelOnInfoPanel(Label l){
+
+        labelInfo.setText(l.player().name());
+    }
+
+    private void drawPlayerOnInfoPanel(Player p){
+
         playerInfo.setText(p.name());
     }
-    
+
     private void setEnabledField(boolean on){
 
         Component comp[] = fieldPanel.getComponents();
         for(Component c : comp)
         {    c.setEnabled(on);   }
     }
-    
-// ----------------------------- Создаем меню ----------------------------------  
-    
+
+// ----------------------------- Создаем меню ----------------------------------
+
     private void createMenu() {
- 
+
         menu = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
 
         for (int i = 0; i < fileItems.length; i++) {
-           
+
             JMenuItem item = new JMenuItem(fileItems[i]);
             item.setActionCommand(fileItems[i].toLowerCase());
             item.addActionListener(new NewMenuListener());
@@ -228,29 +232,29 @@ public class GamePanel extends JFrame {
             if ("new".equals(command)) {
                 _model.start();
                 createField();
-            }  
+            }
         }
     }
-    
+
 // ------------------------- Реагируем на действия игрока ----------------------
-    
+
     private class ClickListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-           
+
             JButton button = (JButton) e.getSource();
             button.setEnabled(false);
-            
+
             // Ставим на поле метку текущего игрока
             Point p = buttonPosition(button);
             _model.activePlayer().setLabelTo(p);
         }
     }
-    
+
     private class PlayerObserver implements PlayerActionListener{
 
         @Override
-        public void labelisPlaced(PlayerActionEvent e) {
+        public void labelIsPlaced(PlayerActionEvent e) {
             
             drawLabelOnField(e.label());
         }
